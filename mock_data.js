@@ -1,27 +1,27 @@
 const games = [
     {
-        id:1,
+        uid:1,
         title:'Witcher',
         genre: 'RPG',
-        coverImg: 'imgurl goes here'
+        storeLink: 'imgurl goes here'
     },
     {
-        id:2,
+        uid:2,
         title: 'Bulletstorm',
         genre:'ACTION',
-        coverImg:'imgurl goes here'
+        storeLink:'imgurl goes here'
     },
     {
-        id:3,
+        uid:3,
         title: 'Prince of Persia',
         genre: 'ADVENTURE',
-        coverImg: 'imgurl goes here'
+        storeLink: 'imgurl goes here'
     },
     {
-        id: 4,
+        uid: 4,
         title: 'Age of empires',
         genre: 'STRATEGY',
-        coverImg: 'imgurl goes here'
+        storeLink: 'imgurl goes here'
     }
 ];
 

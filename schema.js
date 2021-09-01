@@ -1,5 +1,7 @@
 const {gql} = require('apollo-server');
-const {games} = require('./mock_data');
+const {fetchAllGames} = require('./data_source');
+
+// const {games} = require('./mock_data');
 
 const typeDefs = gql`
     # Enums are scalar that is restricted to particular set of values
@@ -13,15 +15,15 @@ const typeDefs = gql`
 
     # type Game defines the queryable fields for every Game in our data source 
     type Game {
-        id: Int!
+        uid: String!
         title: String!
         genre: Genre!
-        coverImg: String!
+        storeLink: String!
     }
 
     # Query type lists all the queries a client can execute and what data they return.
     type Query {
-        games: [Game!]!
+        games: [Game!]
     }
 `;
 
@@ -38,7 +40,10 @@ const resolvers = {
         STRATEGY: 'STRATEGY'
     },
     Query: {
-        games: () => games,
+        games: async() => {
+            const response = await fetchAllGames();
+            return response.Items;
+        },
     }
 }
 
