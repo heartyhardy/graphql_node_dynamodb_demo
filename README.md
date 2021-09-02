@@ -12,3 +12,9 @@
 - Created a Mock Data source in JS
 - Added a single resolver to fetch all games from the mock data
 
+## Day 2
+
+- Added AWS SDK for connectivity
+- Created necessary functions to connect and scan for data in a single table 'Game'
+- Replaced the default resolver in the Query to return actual data from DynamoDB
+
