@@ -1,5 +1,8 @@
-const {gql} = require('apollo-server');
-const {fetchAllGames} = require('./data_source');
+const { gql } = require('apollo-server');
+const {
+    fetchAllGames,
+    fetchGameByID,
+    fetchGamesByGenre } = require('./data_source');
 
 // const {games} = require('./mock_data');
 
@@ -24,6 +27,8 @@ const typeDefs = gql`
     # Query type lists all the queries a client can execute and what data they return.
     type Query {
         games: [Game!]
+        gameByID(gameID: String!): [Game!]
+        gamesByGenre(genre: Genre!): [Game!]!
     }
 `;
 
@@ -32,7 +37,7 @@ const typeDefs = gql`
     Query type specifies all of the entry points in our GraphQL API
 */
 const resolvers = {
-    
+
     Genre: {
         ACTION: 'ACTION',
         ADVENTURE: 'ADVENTURE',
@@ -40,10 +45,18 @@ const resolvers = {
         STRATEGY: 'STRATEGY'
     },
     Query: {
-        games: async() => {
+        games: async () => {
             const response = await fetchAllGames();
             return response.Items;
         },
+        gameByID: async (parent, { gameID }) => {
+            const response = await fetchGameByID(gameID);
+            return response.Items;
+        },
+        gamesByGenre: async (parent, {genre}) => {
+            const response = await fetchGamesByGenre(genre);
+            return response.Items;
+        }
     }
 }
 
