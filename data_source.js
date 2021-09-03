@@ -18,6 +18,11 @@ const initConnection = () => {
 };
 
 
+/**
+ * Fetch all records from the database(EXPERIMENTAL)
+ *
+ * @return  {Promise([Game!])}  Returns a promise, resolves to data or rejects with err
+ */
 const fetchAllGames = () => {
     let params = {
         TableName: 'Game'
@@ -41,10 +46,73 @@ const fetchAllGames = () => {
             }
         });
     });
+}
 
+
+/**
+ * Fetch a Game by its UUID
+ *
+ * @param   {String!}  gameID  GameID is a uuid and should be String, not nullable
+ *
+ * @return  {Promise([Game])}          Returns a Promise, resolves to data or rejects with err
+ */
+const fetchGameByID = (gameID) =>{
+    let params = {
+        TableName: 'Game',
+        KeyConditionExpression: 'uid = :u',
+        ExpressionAttributeValues: {
+            ":u": gameID,
+        }
+    }
+
+    initConnection();
+
+    return new Promise((resolve, reject) => {
+        return client.query(params, (err, data) => {
+            if(err){
+                console.error(`Failed to scan the table: ${params.TableName} Err info:`, JSON.stringify(err, null, 2));
+                reject(err);
+            }else{
+                resolve(data);
+            }
+        });
+    });
+}
+
+
+/**
+ * Fetch A Game by its Genre
+ *
+ * @param   {Game!}  genre  One of Genre enum variants as specified in the Schema
+ *
+ * @return  {Promise([Game!])}         Returns a promise, resolves to data or rejects with err
+ */
+const fetchGamesByGenre = (genre) => {
+    let params = {
+        TableName: 'Game',
+        FilterExpression: 'genre = :gn',
+        ExpressionAttributeValues: {
+            ":gn": genre,
+        }
+    }
+
+    initConnection();
+
+    return new Promise((resolve, reject) => {
+        return client.scan(params, (err, data) => {
+            if(err){
+                console.error(`Failed to scan the table: ${params.TableName} Err info:`, JSON.stringify(err, null, 2));
+                reject(err);
+            }else{
+                resolve(data);
+            }
+        });
+    });
 }
 
 
 module.exports = {
     fetchAllGames,
+    fetchGameByID,
+    fetchGamesByGenre,
 }
