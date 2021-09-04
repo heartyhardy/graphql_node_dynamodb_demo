@@ -10,9 +10,9 @@ const setConfig = () => {
 
 const initConnection = () => {
     if (client === null) {
-        
+
         setConfig();
-        
+
         client = new AWS.DynamoDB.DocumentClient();
     }
 };
@@ -21,11 +21,11 @@ const initConnection = () => {
 /**
  * Fetch all records from the database(EXPERIMENTAL)
  *
- * @return  {Promise([Game!])}  Returns a promise, resolves to data or rejects with err
+ * @return  {Promise([VideoGame!])}  Returns a promise, resolves to data or rejects with err
  */
 const fetchAllGames = () => {
     let params = {
-        TableName: 'Game'
+        TableName: 'VideoGame'
     }
 
     initConnection();
@@ -37,7 +37,7 @@ const fetchAllGames = () => {
                 reject(err);
             } else {
                 resolve(data);
-    
+
                 // Continue scanning if there are have more Games, since Max data retrieval capped at 1MB
                 if (typeof data.LastEvaluatedKey != "undefined") {
                     params.ExclusiveStartKey = data.LastEvaluatedKey;
@@ -50,20 +50,53 @@ const fetchAllGames = () => {
 
 
 /**
- * Fetch a Game by its UUID
+ * Fetch all games by Genre
  *
- * @param   {String!}  gameID  GameID is a uuid and should be String, not nullable
+ * @param   {Genre!}  genre  A variant of the enum Genre
  *
- * @return  {Promise([Game])}          Returns a Promise, resolves to data or rejects with err
+ * @return  {Promise([VideoGame!])}         Returns a promise containing an array of Game or rejects with err
  */
-const fetchGameByID = (gameID) =>{
+const fetchByGenre = (genre) => {
     let params = {
-        TableName: 'Game',
-        KeyConditionExpression: 'uid = :u',
+        TableName: 'VideoGame',
+        KeyConditionExpression: 'genre = :g',
         ExpressionAttributeValues: {
-            ":u": gameID,
+            ":g": genre
         }
-    }
+    };
+
+    initConnection();
+
+    return new Promise((resolve, reject) => {
+        return client.query(params, (err, data) => {
+            if (err) {
+                console.error(`Failed to scan the table: ${params.TableName} Err info:`, JSON.stringify(err, null, 2));
+                reject(err);
+            }else{
+                resolve(data);
+            };
+        });
+    });
+}
+
+
+/**
+ * Fetch a game by its Genre and by a specific title
+ *
+ * @param   {Genre!}  genre  Variant of the Genre Enum
+ * @param   {String!}  title  Title of the game
+ *
+ * @return  {Promise([VideoGame!])}         Returns a promise that resolves to VideoGame array or rejects with err
+ */
+const fetchByTitle = (genre, title) => {
+    let params = {
+        TableName: 'VideoGame',
+        KeyConditionExpression: "genre = :g and title = :t",
+        ExpressionAttributeValues:{
+            ":g": genre,
+            ":t": title
+        }
+    };
 
     initConnection();
 
@@ -71,7 +104,7 @@ const fetchGameByID = (gameID) =>{
         return client.query(params, (err, data) => {
             if(err){
                 console.error(`Failed to scan the table: ${params.TableName} Err info:`, JSON.stringify(err, null, 2));
-                reject(err);
+                reject(err);       
             }else{
                 resolve(data);
             }
@@ -81,38 +114,49 @@ const fetchGameByID = (gameID) =>{
 
 
 /**
- * Fetch A Game by its Genre
+ * Fetch games by Genre and Rating
  *
- * @param   {Game!}  genre  One of Genre enum variants as specified in the Schema
+ * @param   {Genre!}  genre       A valid variant of Genre Enum
+ * @param   {Int!}  lowerBound  From lowest rating
+ * @param   {Int!}  upperBound  To highest rating
  *
- * @return  {Promise([Game!])}         Returns a promise, resolves to data or rejects with err
+ * @return  {Promise([VideoGame!])}              Returns a promise resolving to VideoGame array or rejects with err
  */
-const fetchGamesByGenre = (genre) => {
-    let params = {
-        TableName: 'Game',
-        FilterExpression: 'genre = :gn',
-        ExpressionAttributeValues: {
-            ":gn": genre,
+const fetchByRating = (genre, lowerBound, upperBound) => {
+  let params = {
+      TableName: 'VideoGame',
+      KeyConditionExpression: "#gnr = :g and title between :t1 and :t2",
+      FilterExpression: "rating between :r1 and :r2",
+      ExpressionAttributeNames: {
+          "#gnr": "genre",
+      },
+      ExpressionAttributeValues:{
+          ":g": genre,
+          ":t1": 'A',
+          ":t2": '~',
+          ":r1": lowerBound > upperBound ? upperBound: lowerBound,
+          ":r2": lowerBound > upperBound ? lowerBound: upperBound
+      }
+  };
+  
+  initConnection();
+
+  return new Promise((resolve, reject) => {
+    return client.query(params, (err, data) => {
+        if(err){
+            console.error(`Failed to scan the table: ${params.TableName} Err info:`, JSON.stringify(err, null, 2));
+            reject(err);   
+        }else{
+            resolve(data);
         }
-    }
-
-    initConnection();
-
-    return new Promise((resolve, reject) => {
-        return client.scan(params, (err, data) => {
-            if(err){
-                console.error(`Failed to scan the table: ${params.TableName} Err info:`, JSON.stringify(err, null, 2));
-                reject(err);
-            }else{
-                resolve(data);
-            }
-        });
     });
-}
+  });
+};
 
 
 module.exports = {
     fetchAllGames,
-    fetchGameByID,
-    fetchGamesByGenre,
+    fetchByGenre,
+    fetchByTitle,
+    fetchByRating,
 }
