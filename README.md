@@ -25,3 +25,8 @@
 - All resolvers are now Async
 - Added better comments
 
+## Day 4-5
+- Changed the database design. Genre is now the partition key and title is the sort key
+- Made changes to the DynamoDB data fetching functions
+- Added a complex query to filter titles by game rating (upper and lower bounds)
+- Added a GrapQL resolver to execute about query
