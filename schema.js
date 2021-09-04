@@ -1,8 +1,9 @@
 const { gql } = require('apollo-server');
 const {
     fetchAllGames,
-    fetchGameByID,
-    fetchGamesByGenre } = require('./data_source');
+    fetchByGenre,
+    fetchByTitle,
+    fetchByRating } = require('./data_source');
 
 // const {games} = require('./mock_data');
 
@@ -17,18 +18,19 @@ const typeDefs = gql`
     }
 
     # type Game defines the queryable fields for every Game in our data source 
-    type Game {
-        uid: String!
-        title: String!
+    type VideoGame {
         genre: Genre!
+        title: String!
+        rating: Int!
         storeLink: String!
     }
 
     # Query type lists all the queries a client can execute and what data they return.
     type Query {
-        games: [Game!]
-        gameByID(gameID: String!): [Game!]
-        gamesByGenre(genre: Genre!): [Game!]!
+        games: [VideoGame!]
+        gamesByGenre(genre: Genre!): [VideoGame!]!
+        gamesByTitle(genre: Genre!, title: String!): [VideoGame!]
+        gamesByRating(genre: Genre!, lowerBound: Int!, upperBound: Int!): [VideoGame!]
     }
 `;
 
@@ -49,12 +51,17 @@ const resolvers = {
             const response = await fetchAllGames();
             return response.Items;
         },
-        gameByID: async (parent, { gameID }) => {
-            const response = await fetchGameByID(gameID);
+        gamesByGenre: async (parent, {genre}) => {
+            const response = await fetchByGenre(genre);
             return response.Items;
         },
-        gamesByGenre: async (parent, {genre}) => {
-            const response = await fetchGamesByGenre(genre);
+        gamesByTitle: async(parent, {genre, title}) => {
+            const response = await fetchByTitle(genre, title);
+            return response.Items;
+        },
+        gamesByRating: async(parent, {genre, lowerBound, upperBound}) => {
+            const response = await fetchByRating(genre, lowerBound, upperBound);
+            console.log(response);
             return response.Items;
         }
     }
