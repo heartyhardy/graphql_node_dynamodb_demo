@@ -3,7 +3,8 @@ const {
     fetchAllGames,
     fetchByGenre,
     fetchByTitle,
-    fetchByRating } = require('./data_source');
+    fetchByRating,
+    newGame } = require('./data_source');
 
 // const {games} = require('./mock_data');
 
@@ -25,12 +26,25 @@ const typeDefs = gql`
         storeLink: String!
     }
 
+    # Used when returning results from newGame mutation
+    type NullableVideoGame{
+        genre: Genre
+        title: String
+        rating: Int
+        storeLink: String
+    }
+
     # Query type lists all the queries a client can execute and what data they return.
     type Query {
         games: [VideoGame!]
         gamesByGenre(genre: Genre!): [VideoGame!]!
         gamesByTitle(genre: Genre!, title: String!): [VideoGame!]
         gamesByRating(genre: Genre!, lowerBound: Int!, upperBound: Int!): [VideoGame!]
+    }
+
+    # Mutations write data to the data source
+    type Mutation{
+        newGame(genre: Genre!, title:String!, rating:Int!, storeLink:String!): NullableVideoGame
     }
 `;
 
@@ -63,6 +77,12 @@ const resolvers = {
             const response = await fetchByRating(genre, lowerBound, upperBound);
             console.log(response);
             return response.Items;
+        }
+    },
+    Mutation: {
+        newGame: async(parent, {genre, title, rating, storeLink}) => {
+            const response = await newGame(genre, title, rating, storeLink);
+            return response.Attributes;
         }
     }
 }

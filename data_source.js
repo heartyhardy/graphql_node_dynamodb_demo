@@ -154,9 +154,47 @@ const fetchByRating = (genre, lowerBound, upperBound) => {
 };
 
 
+
+/**
+ * Inserts a new game
+ *
+ * @param   {Genre!}  genre      Variant of a Genre Enum
+ * @param   {String!}  title      Game title
+ * @param   {String!}  rating     Game rating
+ * @param   {String!}  storeLink  Game store link
+ *
+ * @return  {Promise(NullableVideoGame)}             returns a Promise resolving to NullableVideoGame or rejects with err
+ */
+const newGame = (genre, title, rating, storeLink) => {
+    let params = {
+        TableName: 'VideoGame',
+        Item: {
+            'genre': genre,
+            'title': title,
+            'rating': rating,
+            'storeLink': storeLink
+        },
+        ReturnValues: 'ALL_OLD'
+    };
+
+    initConnection();
+
+    return new Promise((resolve, reject) => {
+        return client.put(params, (err, data) => {
+            if(err){
+                console.error(`Failed to insert an item: ${params.TableName} Err info:`, JSON.stringify(err, null, 2));
+                reject(err);   
+            }else{
+                resolve(data);
+            }
+        });
+    });
+};
+
 module.exports = {
     fetchAllGames,
     fetchByGenre,
     fetchByTitle,
     fetchByRating,
+    newGame
 }
