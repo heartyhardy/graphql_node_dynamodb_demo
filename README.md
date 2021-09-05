@@ -29,4 +29,11 @@
 - Changed the database design. Genre is now the partition key and title is the sort key
 - Made changes to the DynamoDB data fetching functions
 - Added a complex query to filter titles by game rating (upper and lower bounds)
-- Added a GrapQL resolver to execute about query
+- Added a GrapQL resolver to execute above query
+
+## Day 6
+- Added a function: newGame() to insert a new Item to the db
+- Added the very fist mutation - newGame()
+- Added a type to return an empty video game object: NullableVideoGame
+- Used NUllableVideoGame as the return type of the mutation: newGame()
+- Importing CSV data failed. Will try again to bulk import CSV data from S3 to DynamoDB.
